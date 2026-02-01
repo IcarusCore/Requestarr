@@ -1,0 +1,40 @@
+services:
+  requestarr:
+    image: ghcr.io/icaruscore/requestarr:latest
+    # Or build locally:
+    # build: .
+    container_name: requestarr
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./config:/config
+    environment:
+      - PORT=5000
+      - ADMIN_PASSWORD=changeme           # Change this!
+      - SECRET_KEY=change-me-please       # Change this to a random string!
+      - DB_PATH=/config/requestarr.db
+      - TZ=America/New_York               # Set your timezone
+      # Optional: Pre-configure services (can also be set via Web UI)
+      # - SONARR_URL=http://sonarr:8989
+      # - SONARR_API_KEY=your-api-key
+      # - RADARR_URL=http://radarr:7878
+      # - RADARR_API_KEY=your-api-key
+      # - TMDB_API_KEY=your-tmdb-api-key
+      # - MDBLIST_API_KEY=your-mdblist-key
+      # - DISCORD_WEBHOOK=https://discord.com/api/webhooks/...
+      # - NTFY_URL=https://ntfy.sh
+      # - NTFY_TOPIC=requestarr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Uncomment to connect to your arr network
+    # networks:
+    #   - arr-network
+
+# networks:
+#   arr-network:
+#     external: true

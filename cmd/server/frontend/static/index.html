@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requestarr</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --rt-fresh: #0ac855;
+            --rt-rotten: #f93208;
+            --imdb-yellow: #f5c518;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+        .bg-gradient { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse 80% 50% at 20% -20%, rgba(99, 102, 241, 0.15), transparent); pointer-events: none; z-index: 0; }
+        .app-container { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .logo-text { font-size: 1.5rem; font-weight: 700; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .nav-tabs { display: flex; gap: 0.25rem; background: var(--glass); padding: 0.25rem; border-radius: 10px; border: 1px solid var(--glass-border); }
+        .nav-tab { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .nav-tab:hover { color: var(--text-primary); }
+        .nav-tab.active { background: var(--accent); color: white; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; border-radius: 8px; border: none; font-family: inherit; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-ghost { background: var(--glass); color: var(--text-secondary); border: 1px solid var(--glass-border); }
+        .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .discovery-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; justify-content: space-between; }
+        .filter-group { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .media-toggle { display: flex; background: var(--glass); border-radius: 8px; padding: 0.25rem; border: 1px solid var(--glass-border); }
+        .media-toggle-btn { padding: 0.5rem 1rem; border: none; background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.8125rem; font-weight: 500; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+        .media-toggle-btn:hover { color: var(--text-primary); }
+        .media-toggle-btn.active { background: var(--accent); color: white; }
+        .media-toggle-btn.active.movies { background: #ef4444; }
+        .sort-select { padding: 0.5rem 1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 0.8125rem; }
+        .sort-select option { background: var(--bg-secondary); }
+        .search-box { position: relative; flex: 1; max-width: 400px; min-width: 200px; }
+        .search-box input { width: 100%; padding: 0.625rem 1rem 0.625rem 2.5rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 0.875rem; }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-box input:focus { outline: none; border-color: var(--accent); }
+        .search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px; }
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.25rem; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; transition: all 0.3s; cursor: pointer; }
+        .card:hover { transform: translateY(-4px); border-color: rgba(99, 102, 241, 0.3); box-shadow: var(--shadow-lg); }
+        .card-poster { position: relative; aspect-ratio: 2/3; background: var(--bg-secondary); overflow: hidden; }
+        .card-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .card:hover .card-poster img { transform: scale(1.05); }
+        .card-poster::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); }
+        .card-ratings { position: absolute; top: 0.5rem; left: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; flex-wrap: wrap; z-index: 5; }
+        .rating-badge { padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.625rem; font-weight: 700; display: flex; align-items: center; gap: 0.2rem; backdrop-filter: blur(8px); background: rgba(0,0,0,0.7); }
+        .rating-badge.rt-fresh { color: var(--rt-fresh); }
+        .rating-badge.rt-rotten { color: var(--rt-rotten); }
+        .rating-badge.imdb { color: var(--imdb-yellow); }
+        .rating-badge.tmdb { color: #01d277; }
+        .card-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.75rem; z-index: 5; }
+        .card-title { font-weight: 600; font-size: 0.875rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-year { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .status-badge { position: absolute; bottom: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; z-index: 5; }
+        .status-badge.exists { background: var(--success); color: white; }
+        .status-badge.requested { background: var(--warning); color: black; }
+        .loading-spinner { display: flex; justify-content: center; padding: 2rem; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--glass-border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .load-more-trigger { height: 100px; display: flex; align-items: center; justify-content: center; }
+        .end-of-results { text-align: center; padding: 2rem; color: var(--text-muted); }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-backdrop.active { opacity: 1; visibility: visible; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--bg-secondary); border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; z-index: 101; opacity: 0; visibility: hidden; transition: all 0.3s; display: flex; flex-direction: column; }
+        .modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+        .modal-banner { width: 100%; height: 200px; object-fit: cover; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%); }
+        .modal-content { padding: 1.5rem; overflow-y: auto; flex: 1; }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.5); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 5; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .modal-meta { display: flex; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .modal-ratings { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .modal-rating { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--glass); border-radius: 8px; font-size: 0.875rem; }
+        .modal-rating-label { color: var(--text-secondary); font-size: 0.75rem; }
+        .modal-rating-value { font-weight: 700; }
+        .modal-overview { color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; }
+        .modal-badges { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .badge-exists { background: var(--success); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; }
+        .badge-requested { background: var(--warning); color: black; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.75rem 1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 0.875rem; }
+        .form-input:focus { outline: none; border-color: var(--accent); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .request-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .request-item { display: flex; gap: 1rem; padding: 1rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; align-items: center; }
+        .request-poster { width: 50px; height: 75px; border-radius: 6px; overflow: hidden; background: var(--bg-secondary); flex-shrink: 0; }
+        .request-poster img { width: 100%; height: 100%; object-fit: cover; }
+        .request-info { flex: 1; min-width: 0; }
+        .request-title { font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .request-meta { font-size: 0.75rem; color: var(--text-secondary); }
+        .request-status { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
+        .request-status.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .request-status.approved { background: rgba(99, 102, 241, 0.2); color: var(--accent); }
+        .request-status.completed { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .request-status.rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .request-actions { display: flex; gap: 0.5rem; }
+        .admin-tabs { display: flex; gap: 0.25rem; background: var(--glass); padding: 0.25rem; border-radius: 10px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem; overflow-x: auto; }
+        .admin-tab { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.8125rem; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .admin-tab:hover { color: var(--text-primary); }
+        .admin-tab.active { background: var(--accent); color: white; }
+        .admin-content { display: none; }
+        .admin-content.active { display: block; }
+        .settings-section { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .settings-section-title { font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .settings-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .connection-status { font-size: 0.75rem; margin-left: auto; }
+        .connection-status.connected { color: var(--success); }
+        .connection-status.disconnected { color: var(--danger); }
+        .connection-status.not-configured { color: var(--text-muted); }
+        .api-info { background: var(--glass); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; font-size: 0.8125rem; color: var(--text-secondary); }
+        .api-info a { color: var(--accent); text-decoration: none; }
+        .api-info a:hover { text-decoration: underline; }
+        .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { padding: 0.875rem 1.25rem; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-primary); font-size: 0.875rem; animation: slideIn 0.3s ease; }
+        .toast.error { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📺</div>
+                <span class="logo-text">Requestarr</span>
+            </div>
+            <div class="header-actions">
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-page="discover">Discover</button>
+                    <button class="nav-tab" data-page="topRated">Top Rated</button>
+                    <button class="nav-tab" data-page="requests">Requests</button>
+                    <button class="nav-tab" data-page="admin">Admin</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-content active" id="discoverPage">
+            <div class="discovery-controls">
+                <div class="filter-group">
+                    <div class="media-toggle">
+                        <button class="media-toggle-btn active movies" data-media="movies">🎬 Movies</button>
+                        <button class="media-toggle-btn" data-media="series">📺 TV Shows</button>
+                    </div>
+                    <select class="sort-select" id="sortSelect">
+                        <option value="popularity.desc">Most Popular</option>
+                        <option value="vote_average.desc">Top Rated (TMDB)</option>
+                        <option value="rt_critics.desc">🍅 Tomato Score</option>
+                        <option value="rt_audience.desc">🍿 Audience Score</option>
+                        <option value="primary_release_date.desc">Newest</option>
+                        <option value="revenue.desc">Highest Grossing</option>
+                    </select>
+                    <select class="sort-select" id="yearFilter">
+                        <option value="">All Years</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" id="refreshBtn" title="Refresh">🔄</button>
+                </div>
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" id="searchInput" placeholder="Search movies and TV shows...">
+                </div>
+            </div>
+            <div id="discoverContent"></div>
+            <div class="load-more-trigger" id="loadMoreTrigger"><div class="spinner" id="loadMoreSpinner" style="display: none;"></div></div>
+        </div>
+
+        <div class="page-content" id="topRatedPage">
+            <div class="discovery-controls">
+                <div class="filter-group">
+                    <div class="media-toggle" id="topMediaToggle">
+                        <button class="media-toggle-btn active movies" data-media="movies">🎬 Movies</button>
+                        <button class="media-toggle-btn" data-media="series">📺 TV Shows</button>
+                    </div>
+                    <select class="sort-select" id="topSortSelect">
+                        <option value="rt_critics.desc">🍅 Tomato Score</option>
+                        <option value="rt_audience.desc">🍿 Audience Score</option>
+                    </select>
+                    <select class="sort-select" id="topYearFilter">
+                        <option value="">All Years</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" id="topRefreshBtn" title="Refresh">🔄</button>
+                </div>
+            </div>
+            <div id="topRatedContent"></div>
+            <div class="load-more-trigger" id="topLoadMoreTrigger"><div class="spinner" id="topLoadMoreSpinner" style="display: none;"></div></div>
+        </div>
+
+        <div class="page-content" id="requestsPage">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total</div></div>
+                <div class="stat-card"><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div>
+                <div class="stat-card"><div class="stat-value" id="statApproved">0</div><div class="stat-label">Approved</div></div>
+                <div class="stat-card"><div class="stat-value" id="statCompleted">0</div><div class="stat-label">Completed</div></div>
+            </div>
+            <div class="request-list" id="requestsList"></div>
+            <div class="empty-state" id="requestsEmpty" style="display: none;"><div class="empty-state-icon">📭</div><p>No requests yet</p></div>
+        </div>
+
+        <div class="page-content" id="adminPage">
+            <div id="adminLogin">
+                <div class="settings-section" style="max-width: 400px; margin: 2rem auto;">
+                    <h3 style="margin-bottom: 1rem;">Admin Login</h3>
+                    <div class="form-group"><input type="password" class="form-input" id="adminPassword" placeholder="Enter admin password"></div>
+                    <button class="btn btn-primary" id="adminLoginBtn">Login</button>
+                </div>
+            </div>
+            <div id="adminPanel" style="display: none;">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-tab="pending">Pending</button>
+                    <button class="admin-tab" data-tab="all">All Requests</button>
+                    <button class="admin-tab" data-tab="settings">Settings</button>
+                    <button class="admin-tab" data-tab="activity">Activity</button>
+                </div>
+                <div class="admin-content active" id="adminPendingTab"><div class="request-list" id="adminPendingList"></div></div>
+                <div class="admin-content" id="adminAllTab"><div class="request-list" id="adminAllList"></div></div>
+                <div class="admin-content" id="adminSettingsTab"></div>
+                <div class="admin-content" id="adminActivityTab"><div class="request-list" id="adminActivityList"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="detailModalBackdrop"></div>
+    <div class="modal" id="detailModal">
+        <button class="modal-close" id="modalClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        <img class="modal-banner" id="modalBanner" src="" alt="">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-meta" id="modalMeta"></div>
+            <div class="modal-ratings" id="modalRatings"></div>
+            <div class="modal-badges">
+                <span class="badge-exists" id="modalExistsBadge" style="display: none;">✓ In Library</span>
+                <span class="badge-requested" id="modalRequestedBadge" style="display: none;">⏳ Already Requested</span>
+            </div>
+            <p class="modal-overview" id="modalOverview"></p>
+            <div id="requestForm">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.875rem;">Request this <span id="requestFormType">movie</span></p>
+                <div class="form-group"><label class="form-label">Your Name *</label><input type="text" class="form-input" id="requesterName" placeholder="Enter your name"></div>
+                <div class="form-group"><label class="form-label">Email (optional)</label><input type="email" class="form-input" id="requesterEmail" placeholder="For notifications"></div>
+                <button class="btn btn-primary" id="submitRequest" style="width: 100%;">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="approveModalBackdrop"></div>
+    <div class="modal" id="approveModal" style="max-width: 450px;">
+        <button class="modal-close" id="approveModalClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        <div class="modal-content">
+            <h2 class="modal-title">Approve Request</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="approveSeriesTitle"></p>
+            <div class="form-group"><label class="form-label">Root Folder</label><select class="form-input" id="approveRootFolder"></select></div>
+            <div class="form-group"><label class="form-label">Quality Profile</label><select class="form-input" id="approveQualityProfile"></select></div>
+            <div class="form-group" id="monitorGroup"><label class="form-label">Monitor</label><select class="form-input" id="approveMonitor"><option value="all">All Episodes</option><option value="future">Future Episodes</option><option value="missing">Missing Episodes</option><option value="pilot">Pilot Only</option><option value="none">None</option></select></div>
+            <div class="form-group" id="availabilityGroup" style="display: none;"><label class="form-label">Minimum Availability</label><select class="form-input" id="approveAvailability"><option value="announced">Announced</option><option value="inCinemas">In Cinemas</option><option value="released">Released</option></select></div>
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;"><button class="btn btn-ghost" id="approveCancel" style="flex: 1;">Cancel</button><button class="btn btn-success" id="approveConfirm" style="flex: 1;">Approve & Add</button></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        let currentMedia = null;
+        let currentMediaType = 'movies';
+        let isAdmin = false;
+        let adminSettings = null;
+        let approveRequestId = null;
+        let approveMediaType = null;
+        let discoverData = { series: [], movies: [] };
+        let topRatedData = { series: [], movies: [] };
+        let searchTimeout = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let isLoading = false;
+        let isSearchMode = false;
+        let currentYearFilter = '';
+        
+        // Top Rated page state
+        let topCurrentPage = 1;
+        let topTotalPages = 1;
+        let topIsLoading = false;
+        let topMediaType = 'movies';
+        let topYearFilter = '';
+        let currentActivePage = 'discover';
+
+        // Initialize year filters
+        function initYearFilters() {
+            const currentYear = new Date().getFullYear();
+            const yearOptions = ['<option value="">All Years</option>'];
+            for (let y = currentYear + 1; y >= 1950; y--) {
+                yearOptions.push('<option value="' + y + '">' + y + '</option>');
+            }
+            const yearHtml = yearOptions.join('');
+            document.getElementById('yearFilter').innerHTML = yearHtml;
+            document.getElementById('topYearFilter').innerHTML = yearHtml;
+        }
+        initYearFilters();
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        async function api(endpoint, options = {}) {
+            const response = await fetch('/api' + endpoint, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', ...options.headers },
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                if (response.status === 401 && endpoint.startsWith('/admin/') && endpoint !== '/admin/login' && endpoint !== '/admin/check') {
+                    isAdmin = false;
+                    document.getElementById('adminLogin').style.display = 'block';
+                    document.getElementById('adminPanel').style.display = 'none';
+                    throw new Error('Session expired - please log in again');
+                }
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        }
+
+        // Nav tab handling
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const page = tab.dataset.page;
+                currentActivePage = page;
+                document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+                document.getElementById(page + 'Page').classList.add('active');
+                if (page === 'requests') loadRequests();
+                if (page === 'admin') checkAdmin();
+                if (page === 'topRated' && topRatedData[topMediaType].length === 0) {
+                    loadTopRated(true);
+                }
+            });
+        });
+
+        // Discover page media toggle
+        document.querySelectorAll('#discoverPage .media-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#discoverPage .media-toggle-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('movies'); });
+                btn.classList.add('active');
+                if (btn.dataset.media === 'movies') btn.classList.add('movies');
+                currentMediaType = btn.dataset.media;
+                document.getElementById('searchInput').value = '';
+                isSearchMode = false;
+                currentPage = 1;
+                discoverData[currentMediaType] = [];
+                loadDiscover(true);
+            });
+        });
+
+        // Top Rated page media toggle
+        document.querySelectorAll('#topRatedPage .media-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#topRatedPage .media-toggle-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('movies'); });
+                btn.classList.add('active');
+                if (btn.dataset.media === 'movies') btn.classList.add('movies');
+                topMediaType = btn.dataset.media;
+                topCurrentPage = 1;
+                topRatedData[topMediaType] = [];
+                loadTopRated(true);
+            });
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', () => {
+            if (!isSearchMode) {
+                currentPage = 1;
+                discoverData[currentMediaType] = [];
+                loadDiscover(true);
+            }
+        });
+
+        document.getElementById('yearFilter').addEventListener('change', (e) => {
+            currentYearFilter = e.target.value;
+            if (!isSearchMode) {
+                currentPage = 1;
+                discoverData[currentMediaType] = [];
+                loadDiscover(true);
+            }
+        });
+
+        document.getElementById('topSortSelect').addEventListener('change', () => {
+            topCurrentPage = 1;
+            topRatedData[topMediaType] = [];
+            loadTopRated(true);
+        });
+
+        document.getElementById('topYearFilter').addEventListener('change', (e) => {
+            topYearFilter = e.target.value;
+            topCurrentPage = 1;
+            topRatedData[topMediaType] = [];
+            loadTopRated(true);
+        });
+        
+        // Refresh button handlers
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            isSearchMode = false;
+            currentPage = 1;
+            discoverData[currentMediaType] = [];
+            loadDiscover(true);
+            showToast('Refreshed!');
+        });
+
+        document.getElementById('topRefreshBtn').addEventListener('click', () => {
+            topCurrentPage = 1;
+            topRatedData[topMediaType] = [];
+            loadTopRated(true);
+            showToast('Refreshed!');
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const term = e.target.value.trim();
+                const yearVal = document.getElementById('yearFilter').value;
+                if (term.length < 2) {
+                    isSearchMode = false;
+                    currentPage = 1;
+                    discoverData[currentMediaType] = [];
+                    loadDiscover(true);
+                    return;
+                }
+                isSearchMode = true;
+                try {
+                    const endpoint = currentMediaType === 'series' ? '/search/series' : '/search/movies';
+                    let url = endpoint + '?term=' + encodeURIComponent(term);
+                    if (yearVal) url += '&year=' + yearVal;
+                    const results = await api(url);
+                    // Filter by year if specified
+                    let filtered = results;
+                    if (yearVal) {
+                        filtered = results.filter(item => item.year && String(item.year) === yearVal);
+                    }
+                    renderGrid(filtered, true, 'discoverContent', 'loadMoreTrigger');
+                } catch (error) { showToast(error.message, 'error'); }
+            }, 400);
+        });
+
+        // Intersection observers for infinite scroll
+        const loadMoreObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !isLoading && !isSearchMode && currentPage <= totalPages && currentActivePage === 'discover') {
+                loadDiscover(false);
+            }
+        }, { threshold: 0.1 });
+        loadMoreObserver.observe(document.getElementById('loadMoreTrigger'));
+
+        const topLoadMoreObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !topIsLoading && topCurrentPage <= topTotalPages && currentActivePage === 'topRated') {
+                loadTopRated(false);
+            }
+        }, { threshold: 0.1 });
+        topLoadMoreObserver.observe(document.getElementById('topLoadMoreTrigger'));
+
+        async function loadDiscover(reset = false) {
+            if (isLoading) return;
+            isLoading = true;
+            const spinner = document.getElementById('loadMoreSpinner');
+            const content = document.getElementById('discoverContent');
+            if (reset) {
+                currentPage = 1;
+                content.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+            } else {
+                spinner.style.display = 'block';
+            }
+            try {
+                const sort = document.getElementById('sortSelect').value;
+                const year = document.getElementById('yearFilter').value;
+                const endpoint = currentMediaType === 'series' ? '/discover/series' : '/discover/movies';
+                let url = endpoint + '?page=' + currentPage + '&sort=' + sort;
+                if (year) url += '&year=' + year;
+                const data = await api(url);
+                
+                const newItems = data.results || [];
+                if (reset) {
+                    discoverData[currentMediaType] = newItems;
+                } else {
+                    // Deduplicate before adding
+                    const existingIds = new Set(discoverData[currentMediaType].map(i => i.tmdbId || i.tvdbId));
+                    const uniqueNew = newItems.filter(i => !existingIds.has(i.tmdbId || i.tvdbId));
+                    discoverData[currentMediaType] = [...discoverData[currentMediaType], ...uniqueNew];
+                }
+                totalPages = data.totalPages || 1;
+                currentPage++;
+                
+                if (reset) {
+                    renderGrid(discoverData[currentMediaType], true, 'discoverContent', 'loadMoreTrigger');
+                } else {
+                    // Only render new items, don't re-render everything
+                    const existingIds = new Set(discoverData[currentMediaType].slice(0, -newItems.length).map(i => i.tmdbId || i.tvdbId));
+                    const uniqueNew = newItems.filter(i => !existingIds.has(i.tmdbId || i.tvdbId));
+                    if (uniqueNew.length > 0) {
+                        appendToGrid(uniqueNew, 'discoverContent', 'loadMoreTrigger');
+                    }
+                }
+            } catch (error) {
+                if (reset) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Configure TMDB API key in Admin Settings for discovery</p></div>';
+                }
+            } finally {
+                isLoading = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        async function loadTopRated(reset = false) {
+            if (topIsLoading) return;
+            topIsLoading = true;
+            const spinner = document.getElementById('topLoadMoreSpinner');
+            const content = document.getElementById('topRatedContent');
+            if (reset) {
+                topCurrentPage = 1;
+                content.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+            } else {
+                spinner.style.display = 'block';
+            }
+            try {
+                const sort = document.getElementById('topSortSelect').value;
+                const year = document.getElementById('topYearFilter').value;
+                const endpoint = topMediaType === 'series' ? '/discover/series' : '/discover/movies';
+                let url = endpoint + '?page=' + topCurrentPage + '&sort=vote_average.desc';
+                if (year) url += '&year=' + year;
+                const data = await api(url);
+                
+                const newItems = data.results || [];
+                if (reset) {
+                    topRatedData[topMediaType] = newItems;
+                } else {
+                    const existingIds = new Set(topRatedData[topMediaType].map(i => i.tmdbId || i.tvdbId));
+                    const uniqueNew = newItems.filter(i => !existingIds.has(i.tmdbId || i.tvdbId));
+                    topRatedData[topMediaType] = [...topRatedData[topMediaType], ...uniqueNew];
+                }
+                topTotalPages = data.totalPages || 1;
+                topCurrentPage++;
+                
+                if (reset) {
+                    renderGrid(topRatedData[topMediaType], true, 'topRatedContent', 'topLoadMoreTrigger', sort, true);
+                } else {
+                    const existingIds = new Set(topRatedData[topMediaType].slice(0, -newItems.length).map(i => i.tmdbId || i.tvdbId));
+                    const uniqueNew = newItems.filter(i => !existingIds.has(i.tmdbId || i.tvdbId));
+                    if (uniqueNew.length > 0) {
+                        appendToGrid(uniqueNew, 'topRatedContent', 'topLoadMoreTrigger', true);
+                    }
+                }
+            } catch (error) {
+                if (reset) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Configure TMDB API key in Admin Settings for discovery</p></div>';
+                }
+            } finally {
+                topIsLoading = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        function renderGrid(items, reset = true, contentId = 'discoverContent', triggerId = 'loadMoreTrigger', sortType = null, isTopRated = false) {
+            const content = document.getElementById(contentId);
+            if (items.length === 0) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>No results found</p></div>';
+                return;
+            }
+            
+            // Generate unique IDs for each item to avoid collisions
+            let html = '<div class="content-grid">';
+            items.forEach((item, index) => {
+                const uniqueId = (item.tmdbId || item.tvdbId || '') + '-' + index + '-' + contentId;
+                html += buildCardHtml(item, uniqueId);
+            });
+            html += '</div>';
+            content.innerHTML = html;
+            
+            bindCardEvents(content);
+            
+            // Fetch RT ratings for all items
+            const mediaType = isTopRated ? topMediaType : currentMediaType;
+            fetchRatingsForCards(items, contentId, mediaType, sortType, isTopRated);
+            
+            // Update end of results message
+            const currentPg = isTopRated ? topCurrentPage : currentPage;
+            const totalPg = isTopRated ? topTotalPages : totalPages;
+            const trigger = document.getElementById(triggerId);
+            if (currentPg > totalPg) {
+                trigger.innerHTML = '<div class="end-of-results">You\'ve reached the end</div>';
+            } else {
+                trigger.innerHTML = '<div class="spinner" id="' + (isTopRated ? 'topLoadMoreSpinner' : 'loadMoreSpinner') + '" style="display: none;"></div>';
+            }
+        }
+
+        function appendToGrid(items, contentId, triggerId, isTopRated = false) {
+            const content = document.getElementById(contentId);
+            const grid = content.querySelector('.content-grid');
+            if (!grid) return;
+            
+            const existingCount = grid.querySelectorAll('.card').length;
+            let html = '';
+            items.forEach((item, index) => {
+                const uniqueId = (item.tmdbId || item.tvdbId || '') + '-' + (existingCount + index) + '-' + contentId;
+                html += buildCardHtml(item, uniqueId);
+            });
+            grid.insertAdjacentHTML('beforeend', html);
+            bindCardEvents(content);
+            
+            // Fetch ratings for new items only
+            const mediaType = isTopRated ? topMediaType : currentMediaType;
+            fetchRatingsForCards(items, contentId, mediaType, null, isTopRated);
+            
+            // Update end message
+            const currentPg = isTopRated ? topCurrentPage : currentPage;
+            const totalPg = isTopRated ? topTotalPages : totalPages;
+            const trigger = document.getElementById(triggerId);
+            if (currentPg > totalPg) {
+                trigger.innerHTML = '<div class="end-of-results">You\'ve reached the end</div>';
+            }
+        }
+
+        function buildCardHtml(item, uniqueId) {
+            const itemJson = JSON.stringify(item).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            let html = '<div class="card" data-item="' + itemJson + '" data-tmdb-id="' + (item.tmdbId || '') + '" data-imdb-id="' + (item.imdbId || '') + '"><div class="card-poster">';
+            if (item.poster) html += '<img src="' + item.poster + '" alt="' + (item.title || '').replace(/"/g, '') + '" loading="lazy">';
+            html += '<div class="card-ratings" id="ratings-' + uniqueId + '">';
+            if (item.rtScore !== undefined && item.rtScore !== null) {
+                const isFresh = item.rtScore >= 60;
+                html += '<span class="rating-badge ' + (isFresh ? 'rt-fresh' : 'rt-rotten') + '">🍅 ' + item.rtScore + '%</span>';
+            }
+            if (item.rtAudience !== undefined && item.rtAudience !== null) {
+                const isFresh = item.rtAudience >= 60;
+                html += '<span class="rating-badge ' + (isFresh ? 'rt-fresh' : 'rt-rotten') + '">🍿 ' + item.rtAudience + '%</span>';
+            }
+            if ((item.rtScore === undefined || item.rtScore === null) && item.rating && item.rating > 0) {
+                html += '<span class="rating-badge tmdb">★ ' + item.rating.toFixed(1) + '</span>';
+            }
+            html += '</div>';
+            if (item.requestStatus === 'exists') html += '<span class="status-badge exists">In Library</span>';
+            else if (item.requestStatus === 'requested') html += '<span class="status-badge requested">Requested</span>';
+            html += '<div class="card-info"><div class="card-title">' + (item.title || '') + '</div>';
+            if (item.year) html += '<div class="card-year">' + item.year + '</div>';
+            html += '</div></div></div>';
+            return html;
+        }
+
+        function bindCardEvents(container) {
+            container.querySelectorAll('.card').forEach(card => {
+                if (!card.hasAttribute('data-bound')) {
+                    card.setAttribute('data-bound', 'true');
+                    card.addEventListener('click', () => {
+                        const itemData = card.getAttribute('data-item');
+                        openDetailModal(JSON.parse(itemData.replace(/&quot;/g, '"').replace(/&#39;/g, "'")));
+                    });
+                }
+            });
+        }
+        
+        // Track which rating fetches are in progress
+        let ratingFetchQueues = {};
+        
+        async function fetchRatingsForCards(items, contentId, mediaType, sortType = null, isTopRated = false) {
+            const queueKey = contentId;
+            if (ratingFetchQueues[queueKey]) return;
+            ratingFetchQueues[queueKey] = true;
+            
+            const sortValue = sortType || (isTopRated ? document.getElementById('topSortSelect').value : document.getElementById('sortSelect').value);
+            const isRtSort = sortValue && sortValue.startsWith('rt_');
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.rtScore !== undefined && item.rtScore !== null) continue;
+                
+                try {
+                    const params = new URLSearchParams({ 
+                        title: item.title, 
+                        type: mediaType === 'series' ? 'tv' : 'movie' 
+                    });
+                    if (item.year) params.append('year', item.year);
+                    if (item.imdbId) params.append('imdb_id', item.imdbId);
+                    if (item.tmdbId) params.append('tmdb_id', item.tmdbId);
+                    
+                    const data = await api('/ratings?' + params.toString());
+                    
+                    if (data.rottenTomatoes) item.rtScore = parseInt(data.rottenTomatoes);
+                    if (data.rtAudienceScore) item.rtAudience = parseInt(data.rtAudienceScore);
+                    if (item.rtScore === undefined) item.rtScore = null;
+                    
+                    // Update all matching rating elements (there might be multiple due to unique IDs)
+                    const content = document.getElementById(contentId);
+                    content.querySelectorAll('[id^="ratings-"]').forEach(ratingsEl => {
+                        if (ratingsEl.id.includes((item.tmdbId || item.tvdbId || '') + '-')) {
+                            let html = '';
+                            if (data.rottenTomatoes) {
+                                const rtVal = parseInt(data.rottenTomatoes);
+                                const isFresh = rtVal >= 60;
+                                html += '<span class="rating-badge ' + (isFresh ? 'rt-fresh' : 'rt-rotten') + '">🍅 ' + data.rottenTomatoes + '%</span>';
+                            }
+                            if (data.rtAudienceScore) {
+                                const audVal = parseInt(data.rtAudienceScore);
+                                const isFresh = audVal >= 60;
+                                html += '<span class="rating-badge ' + (isFresh ? 'rt-fresh' : 'rt-rotten') + '">🍿 ' + data.rtAudienceScore + '%</span>';
+                            }
+                            if (!html && item.rating && item.rating > 0) {
+                                html = '<span class="rating-badge tmdb">★ ' + item.rating.toFixed(1) + '</span>';
+                            }
+                            ratingsEl.innerHTML = html;
+                        }
+                    });
+                } catch (e) {
+                    item.rtScore = null;
+                    console.log('Could not fetch ratings for', item.title);
+                }
+                
+                if (i < items.length - 1) {
+                    await new Promise(r => setTimeout(r, 150));
+                }
+            }
+            
+            ratingFetchQueues[queueKey] = false;
+            
+            // Sort by RT if needed - sort the full data array
+            if (isRtSort && !isSearchMode) {
+                const fullData = isTopRated ? topRatedData[mediaType] : discoverData[mediaType];
+                sortByRatings(sortValue, fullData, contentId, isTopRated ? 'topLoadMoreTrigger' : 'loadMoreTrigger', isTopRated);
+            }
+        }
+        
+        function sortByRatings(sortType, items, contentId, triggerId, isTopRated) {
+            const sortedItems = [...items];
+            if (sortType === 'rt_critics.desc') {
+                sortedItems.sort((a, b) => (b.rtScore || 0) - (a.rtScore || 0));
+            } else if (sortType === 'rt_audience.desc') {
+                sortedItems.sort((a, b) => (b.rtAudience || 0) - (a.rtAudience || 0));
+            }
+            
+            // Update the data store with sorted items
+            const mediaType = isTopRated ? topMediaType : currentMediaType;
+            if (isTopRated) {
+                topRatedData[mediaType] = sortedItems;
+            } else {
+                discoverData[mediaType] = sortedItems;
+            }
+            
+            // Re-render without fetching ratings again
+            ratingFetchQueues[contentId] = true;
+            renderGrid(sortedItems, true, contentId, triggerId, sortType, isTopRated);
+            ratingFetchQueues[contentId] = false;
+        }
+
+        function openDetailModal(item) {
+            currentMedia = item;
+            // Detect media type from item - TV shows have tvdbId, movies don't
+            const detectedMediaType = item.tvdbId ? 'series' : 'movies';
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalOverview').textContent = item.overview || 'No description available.';
+            document.getElementById('modalBanner').src = item.fanart || item.poster || '';
+            document.getElementById('requestFormType').textContent = detectedMediaType === 'series' ? 'series' : 'movie';
+            const meta = [];
+            if (item.year) meta.push(item.year);
+            if (item.network) meta.push(item.network);
+            if (item.runtime) meta.push(item.runtime + ' min');
+            document.getElementById('modalMeta').innerHTML = meta.map(m => '<span>' + m + '</span>').join('');
+            
+            // Show TMDB rating immediately, other ratings load async
+            let ratingsHtml = '';
+            if (item.rating && item.rating > 0) {
+                ratingsHtml += '<div class="modal-rating"><div><div class="modal-rating-label">TMDB</div><div class="modal-rating-value" style="color:#01d277">★ ' + item.rating.toFixed(1) + '</div></div></div>';
+            }
+            ratingsHtml += '<div class="modal-rating" id="imdbRatingContainer" style="display:none;"><div><div class="modal-rating-label">IMDb</div><div class="modal-rating-value" id="imdbRatingValue" style="color:var(--imdb-yellow)"></div></div></div>';
+            ratingsHtml += '<div class="modal-rating" id="rtRatingContainer" style="display:none;"><div><div class="modal-rating-label">Rotten Tomatoes</div><div class="modal-rating-value" id="rtRatingValue"></div></div></div>';
+            ratingsHtml += '<div class="modal-rating" id="rtAudienceContainer" style="display:none;"><div><div class="modal-rating-label">Audience</div><div class="modal-rating-value" id="rtAudienceValue"></div></div></div>';
+            ratingsHtml += '<div class="modal-rating" id="metacriticContainer" style="display:none;"><div><div class="modal-rating-label">Metacritic</div><div class="modal-rating-value" id="metacriticValue" style="color:#ffcc33"></div></div></div>';
+            document.getElementById('modalRatings').innerHTML = ratingsHtml;
+            
+            // Fetch all ratings on-demand (from MDBList or RT Algolia)
+            fetchRatings(item.title, item.year, detectedMediaType, item.imdbId, item.tmdbId);
+            
+            document.getElementById('modalExistsBadge').style.display = item.requestStatus === 'exists' ? 'block' : 'none';
+            document.getElementById('modalRequestedBadge').style.display = item.requestStatus === 'requested' ? 'block' : 'none';
+            document.getElementById('requestForm').style.display = item.requestStatus === 'available' ? 'block' : 'none';
+            document.getElementById('detailModal').classList.add('active');
+            document.getElementById('detailModalBackdrop').classList.add('active');
+        }
+        
+        async function fetchRatings(title, year, mediaType, imdbId, tmdbId) {
+            try {
+                const params = new URLSearchParams({ title: title, type: mediaType === 'series' ? 'tv' : 'movie' });
+                if (year) params.append('year', year);
+                if (imdbId) params.append('imdb_id', imdbId);
+                if (tmdbId) params.append('tmdb_id', tmdbId);
+                const data = await api('/ratings?' + params.toString());
+                
+                if (data.rottenTomatoes) {
+                    const rtVal = parseInt(data.rottenTomatoes);
+                    const isFresh = rtVal >= 60;
+                    const icon = data.rtCertified ? '🏆' : (isFresh ? '🍅' : '🤢');
+                    document.getElementById('rtRatingValue').innerHTML = icon + ' ' + data.rottenTomatoes + '%';
+                    document.getElementById('rtRatingValue').style.color = isFresh ? 'var(--rt-fresh)' : 'var(--rt-rotten)';
+                    document.getElementById('rtRatingContainer').style.display = 'block';
+                }
+                if (data.rtAudienceScore) {
+                    const audVal = parseInt(data.rtAudienceScore);
+                    document.getElementById('rtAudienceValue').innerHTML = '🍿 ' + data.rtAudienceScore + '%';
+                    document.getElementById('rtAudienceValue').style.color = audVal >= 60 ? 'var(--rt-fresh)' : 'var(--rt-rotten)';
+                    document.getElementById('rtAudienceContainer').style.display = 'block';
+                }
+                if (data.imdb) {
+                    document.getElementById('imdbRatingValue').innerHTML = '⭐ ' + data.imdb;
+                    document.getElementById('imdbRatingContainer').style.display = 'block';
+                }
+                if (data.metacritic) {
+                    document.getElementById('metacriticValue').innerHTML = data.metacritic;
+                    document.getElementById('metacriticContainer').style.display = 'block';
+                }
+            } catch (e) {
+                console.log('Could not fetch ratings:', e);
+            }
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            document.getElementById('detailModalBackdrop').classList.remove('active');
+        }
+        document.getElementById('modalClose').addEventListener('click', closeDetailModal);
+        document.getElementById('detailModalBackdrop').addEventListener('click', closeDetailModal);
+
+        document.getElementById('submitRequest').addEventListener('click', async () => {
+            const name = document.getElementById('requesterName').value.trim();
+            if (!name) { showToast('Please enter your name', 'error'); return; }
+            try {
+                // Detect media type from the current item
+                const isSeriesItem = !!currentMedia.tvdbId;
+                const mediaTypeStr = isSeriesItem ? 'series' : 'movie';
+                const mediaTypeKey = isSeriesItem ? 'series' : 'movies';
+                
+                const payload = {
+                    requesterName: name,
+                    requesterEmail: document.getElementById('requesterEmail').value.trim() || null,
+                    mediaType: mediaTypeStr,
+                    title: currentMedia.title,
+                    year: currentMedia.year,
+                    poster: currentMedia.poster
+                };
+                if (isSeriesItem) {
+                    payload.tvdbId = currentMedia.tvdbId;
+                    payload.tmdbId = currentMedia.tmdbId;
+                } else {
+                    payload.tmdbId = currentMedia.tmdbId;
+                    payload.imdbId = currentMedia.imdbId;
+                }
+                await api('/request', { method: 'POST', body: JSON.stringify(payload) });
+                showToast('Requested "' + currentMedia.title + '"!');
+                closeDetailModal();
+                document.getElementById('requesterName').value = '';
+                document.getElementById('requesterEmail').value = '';
+                
+                // Update in discover data
+                const discoverIdx = discoverData[mediaTypeKey].findIndex(i => (i.tmdbId && i.tmdbId === currentMedia.tmdbId) || (i.tvdbId && i.tvdbId === currentMedia.tvdbId));
+                if (discoverIdx >= 0) {
+                    discoverData[mediaTypeKey][discoverIdx].requestStatus = 'requested';
+                }
+                
+                // Update in topRated data
+                const topIdx = topRatedData[mediaTypeKey].findIndex(i => (i.tmdbId && i.tmdbId === currentMedia.tmdbId) || (i.tvdbId && i.tvdbId === currentMedia.tvdbId));
+                if (topIdx >= 0) {
+                    topRatedData[mediaTypeKey][topIdx].requestStatus = 'requested';
+                }
+                
+                // Re-render the currently active page
+                if (currentActivePage === 'discover' && discoverIdx >= 0) {
+                    renderGrid(discoverData[mediaTypeKey], true, 'discoverContent', 'loadMoreTrigger');
+                } else if (currentActivePage === 'topRated' && topIdx >= 0) {
+                    renderGrid(topRatedData[mediaTypeKey], true, 'topRatedContent', 'topLoadMoreTrigger', null, true);
+                }
+            } catch (error) { showToast(error.message, 'error'); }
+        });
+
+        async function loadRequests() {
+            try {
+                const [requests, stats] = await Promise.all([api('/requests'), api('/stats')]);
+                document.getElementById('statTotal').textContent = stats.total || 0;
+                document.getElementById('statPending').textContent = stats.pending || 0;
+                document.getElementById('statApproved').textContent = stats.approved || 0;
+                document.getElementById('statCompleted').textContent = stats.completed || 0;
+                const list = document.getElementById('requestsList');
+                if (requests.length === 0) {
+                    list.innerHTML = '';
+                    document.getElementById('requestsEmpty').style.display = 'block';
+                    return;
+                }
+                document.getElementById('requestsEmpty').style.display = 'none';
+                list.innerHTML = requests.map(req => renderRequestItem(req, false)).join('');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        function renderRequestItem(req, showActions) {
+            const icon = req.media_type === 'movie' ? '🎬' : '📺';
+            let html = '<div class="request-item">';
+            html += '<div class="request-poster">' + (req.poster ? '<img src="' + req.poster + '">' : '') + '</div>';
+            html += '<div class="request-info"><div class="request-title">' + icon + ' ' + req.title + '</div>';
+            html += '<div class="request-meta">Requested by ' + req.requester_name + ' • ' + formatDate(req.created_at) + '</div></div>';
+            html += '<span class="request-status ' + req.status + '">' + req.status + '</span>';
+            if (showActions && req.status === 'pending') {
+                html += '<div class="request-actions">';
+                html += '<button class="btn btn-success btn-sm" onclick="openApproveModal(' + req.id + ', \'' + req.title.replace(/'/g, "\\'") + '\', \'' + req.media_type + '\')">Approve</button>';
+                html += '<button class="btn btn-danger btn-sm" onclick="rejectRequest(' + req.id + ')">Reject</button>';
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        async function checkAdmin() {
+            try {
+                const { isAdmin: admin } = await api('/admin/check');
+                isAdmin = admin;
+                document.getElementById('adminLogin').style.display = admin ? 'none' : 'block';
+                document.getElementById('adminPanel').style.display = admin ? 'block' : 'none';
+                if (admin) { loadAdminPending(); loadAdminSettings(); }
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('adminLoginBtn').addEventListener('click', async () => {
+            const password = document.getElementById('adminPassword').value;
+            try {
+                await api('/admin/login', { method: 'POST', body: JSON.stringify({ password }) });
+                showToast('Logged in!');
+                checkAdmin();
+            } catch (e) { showToast(e.message, 'error'); }
+        });
+        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('adminLoginBtn').click(); });
+
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('admin' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1) + 'Tab').classList.add('active');
+                if (tab.dataset.tab === 'pending') loadAdminPending();
+                if (tab.dataset.tab === 'all') loadAdminAll();
+                if (tab.dataset.tab === 'settings') loadAdminSettings();
+                if (tab.dataset.tab === 'activity') loadAdminActivity();
+            });
+        });
+
+        async function loadAdminPending() {
+            try {
+                const requests = await api('/requests?status=pending');
+                document.getElementById('adminPendingList').innerHTML = requests.length === 0 ? '<div class="empty-state"><p>No pending requests</p></div>' : requests.map(r => renderRequestItem(r, true)).join('');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        async function loadAdminAll() {
+            try {
+                const requests = await api('/requests');
+                document.getElementById('adminAllList').innerHTML = requests.length === 0 ? '<div class="empty-state"><p>No requests</p></div>' : requests.map(r => renderRequestItem(r, true)).join('');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        async function loadAdminSettings() {
+            try {
+                adminSettings = await api('/admin/settings');
+                const s = adminSettings.settings;
+                const sonarrOk = adminSettings.sonarr.rootFolders.length > 0;
+                const radarrOk = adminSettings.radarr.rootFolders.length > 0;
+                const tmdbOk = adminSettings.tmdb && adminSettings.tmdb.status === 'connected';
+                let html = '<div class="settings-section">';
+                html += '<div class="settings-section-title"><span>🎬</span> TMDB API (Required for Discovery) <span class="connection-status ' + (tmdbOk ? 'connected' : s.tmdb_api_key ? 'disconnected' : 'not-configured') + '">' + (tmdbOk ? '● Connected' : (s.tmdb_api_key ? '● Error' : '○ Not Set')) + '</span></div>';
+                html += '<div class="form-group"><label class="form-label">TMDB API Key</label><input type="password" class="form-input" id="setTmdbKey" value="' + (s.tmdb_api_key || '') + '" placeholder="Enter your TMDB API key"></div>';
+                html += '<div class="api-info">Get a free API key at <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a></div></div>';
+                
+                html += '<div class="settings-section">';
+                html += '<div class="settings-section-title"><span>⭐</span> MDBList API (For RT + IMDb + Metacritic) <span class="connection-status ' + (s.mdblist_api_key ? 'connected' : 'not-configured') + '">' + (s.mdblist_api_key ? '● Configured' : '○ Not Set') + '</span></div>';
+                html += '<div class="form-group"><label class="form-label">MDBList API Key</label><input type="password" class="form-input" id="setMdblistKey" value="' + (s.mdblist_api_key || '') + '" placeholder="Enter your MDBList API key"></div>';
+                html += '<div class="api-info"><strong>Recommended!</strong> Get a free key at <a href="https://mdblist.com/preferences/" target="_blank">mdblist.com</a> - includes Rotten Tomatoes, IMDb, Metacritic, Letterboxd & more!</div></div>';
+                html += '<div class="settings-section">';
+                html += '<div class="settings-section-title"><span>📺</span> Sonarr <span class="connection-status ' + (sonarrOk ? 'connected' : s.sonarr_url ? 'disconnected' : 'not-configured') + '">' + (sonarrOk ? '● Connected' : (s.sonarr_url ? '● Error' : '○ Not Set')) + '</span></div>';
+                html += '<div class="settings-row"><div class="form-group"><label class="form-label">URL</label><input type="text" class="form-input" id="setSonarrUrl" value="' + (s.sonarr_url || '') + '" placeholder="http://sonarr:8989"></div>';
+                html += '<div class="form-group"><label class="form-label">API Key</label><input type="password" class="form-input" id="setSonarrKey" value="' + (s.sonarr_api_key || '') + '"></div></div>';
+                html += '<button class="btn btn-ghost btn-sm" onclick="testConn(\'sonarr\')">Test Connection</button></div>';
+                html += '<div class="settings-section">';
+                html += '<div class="settings-section-title"><span>🎬</span> Radarr <span class="connection-status ' + (radarrOk ? 'connected' : s.radarr_url ? 'disconnected' : 'not-configured') + '">' + (radarrOk ? '● Connected' : (s.radarr_url ? '● Error' : '○ Not Set')) + '</span></div>';
+                html += '<div class="settings-row"><div class="form-group"><label class="form-label">URL</label><input type="text" class="form-input" id="setRadarrUrl" value="' + (s.radarr_url || '') + '" placeholder="http://radarr:7878"></div>';
+                html += '<div class="form-group"><label class="form-label">API Key</label><input type="password" class="form-input" id="setRadarrKey" value="' + (s.radarr_api_key || '') + '"></div></div>';
+                html += '<button class="btn btn-ghost btn-sm" onclick="testConn(\'radarr\')">Test Connection</button></div>';
+                html += '<div class="settings-section">';
+                html += '<div class="settings-section-title"><span>🔔</span> Notifications</div>';
+                html += '<div class="form-group"><label class="form-label">Discord Webhook</label><input type="text" class="form-input" id="setDiscord" value="' + (s.discord_webhook || '') + '"></div>';
+                html += '<div class="settings-row"><div class="form-group"><label class="form-label">ntfy URL</label><input type="text" class="form-input" id="setNtfyUrl" value="' + (s.ntfy_url || '') + '"></div>';
+                html += '<div class="form-group"><label class="form-label">ntfy Topic</label><input type="text" class="form-input" id="setNtfyTopic" value="' + (s.ntfy_topic || '') + '"></div></div></div>';
+                html += '<button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>';
+                document.getElementById('adminSettingsTab').innerHTML = html;
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.testConn = async function(svc) {
+            const url = document.getElementById(svc === 'sonarr' ? 'setSonarrUrl' : 'setRadarrUrl').value;
+            const key = document.getElementById(svc === 'sonarr' ? 'setSonarrKey' : 'setRadarrKey').value;
+            try {
+                const r = await api('/admin/test-connection', { method: 'POST', body: JSON.stringify({ service: svc, url: url, apiKey: key }) });
+                showToast(r.success ? r.appName + ' v' + r.version + ' OK!' : r.error, r.success ? 'success' : 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        };
+
+        window.saveSettings = async function() {
+            try {
+                await api('/admin/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        sonarr_url: document.getElementById('setSonarrUrl').value,
+                        sonarr_api_key: document.getElementById('setSonarrKey').value,
+                        radarr_url: document.getElementById('setRadarrUrl').value,
+                        radarr_api_key: document.getElementById('setRadarrKey').value,
+                        discord_webhook: document.getElementById('setDiscord').value,
+                        ntfy_url: document.getElementById('setNtfyUrl').value,
+                        ntfy_topic: document.getElementById('setNtfyTopic').value,
+                        tmdb_api_key: document.getElementById('setTmdbKey').value,
+                        mdblist_api_key: document.getElementById('setMdblistKey').value
+                    })
+                });
+                showToast('Settings saved!');
+                loadAdminSettings();
+            } catch (e) { showToast(e.message, 'error'); }
+        };
+
+        async function loadAdminActivity() {
+            try {
+                const activities = await api('/admin/activity');
+                document.getElementById('adminActivityList').innerHTML = activities.length === 0 ? '<div class="empty-state"><p>No activity</p></div>' : activities.map(a => '<div class="request-item"><div class="request-info"><div class="request-title">' + a.action.replace(/_/g, ' ') + '</div><div class="request-meta">' + formatDate(a.created_at) + '</div></div></div>').join('');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.openApproveModal = async function(id, title, mediaType) {
+            approveRequestId = id;
+            approveMediaType = mediaType;
+            document.getElementById('approveSeriesTitle').textContent = title;
+            adminSettings = await api('/admin/settings');
+            const cfg = mediaType === 'series' ? adminSettings.sonarr : adminSettings.radarr;
+            document.getElementById('approveRootFolder').innerHTML = cfg.rootFolders.map(f => '<option value="' + f.path + '">' + f.path + '</option>').join('');
+            document.getElementById('approveQualityProfile').innerHTML = cfg.qualityProfiles.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+            document.getElementById('monitorGroup').style.display = mediaType === 'series' ? 'block' : 'none';
+            document.getElementById('availabilityGroup').style.display = mediaType === 'movie' ? 'block' : 'none';
+            document.getElementById('approveModal').classList.add('active');
+            document.getElementById('approveModalBackdrop').classList.add('active');
+        };
+
+        function closeApproveModal() {
+            document.getElementById('approveModal').classList.remove('active');
+            document.getElementById('approveModalBackdrop').classList.remove('active');
+        }
+        document.getElementById('approveModalClose').addEventListener('click', closeApproveModal);
+        document.getElementById('approveCancel').addEventListener('click', closeApproveModal);
+        document.getElementById('approveModalBackdrop').addEventListener('click', closeApproveModal);
+
+        document.getElementById('approveConfirm').addEventListener('click', async () => {
+            const payload = {
+                rootFolder: document.getElementById('approveRootFolder').value,
+                qualityProfile: document.getElementById('approveQualityProfile').value
+            };
+            if (approveMediaType === 'series') payload.monitor = document.getElementById('approveMonitor').value;
+            else payload.minimumAvailability = document.getElementById('approveAvailability').value;
+            try {
+                await api('/requests/' + approveRequestId + '/approve', { method: 'POST', body: JSON.stringify(payload) });
+                showToast('Approved!');
+                closeApproveModal();
+                loadAdminPending();
+            } catch (e) { showToast(e.message, 'error'); }
+        });
+
+        window.rejectRequest = async function(id) {
+            if (!confirm('Reject this request?')) return;
+            try {
+                await api('/requests/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status: 'rejected' }) });
+                showToast('Rejected');
+                loadAdminPending();
+            } catch (e) { showToast(e.message, 'error'); }
+        };
+
+        loadDiscover(true);
+    </script>
+</body>
+</html>

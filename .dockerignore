@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+LICENSE
+docs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config and data
+config/
+*.db
+*.db-journal
+
+# Environment files
+.env
+.env.*
+
+# Build artifacts
+dist/
+build/
+
+# Binaries
+requestarr
+*.exe
+
+# Test files
+*_test.go
+
+# CI/CD
+.github/
